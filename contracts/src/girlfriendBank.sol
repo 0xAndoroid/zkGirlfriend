@@ -1,16 +1,34 @@
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {GirlfriendNFT} from "./girlfriendNFT.sol";
 
 contract GirlfriendBank{
-    ERC721[] s_nfts;
+    address[] s_nfts;
+    mapping(address => uint256) s_addressToArrayIndex;
+    uint256 s_subscriptionPeriod;
 
     uint256 immutable paymentAmount;
 
-    constructor(uint256 _paymentAmount){
+    error notEnoughPayment();
+
+    modifier checkPaymentAmount() {
+        if(msg.value < paymentAmount){
+            revert notEnoughPayment();
+        }
+        _;
+    }
+
+    constructor(uint256 _paymentAmount, uint256 _subscriptionPeriod){
         paymentAmount = _paymentAmount;
+        s_subscriptionPeriod = _subscriptionPeriod;
     } 
 
-    //newGirlfriend
+    function newGirlfriend() external payable checkPaymentAmount {
+        GirlfriendNFT temp = new GirlfriendNFT(s_subscriptionPeriod, msg.sender);
+        s_addressToArrayIndex[msg.sender] = s_nfts.length;
+        s_nfts.push(address(temp));
+    }
 
-    //subscription
+    function paySubscription() external payable checkPaymentAmount {
+        GirlfriendNFT(s_nfts[s_addressToArrayIndex[msg.sender]]).paySubscription();
+    }
 
 }
