@@ -1,8 +1,8 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 /// Implements https://core.telegram.org/bots/api#message
 /// Removing unnecessary fields
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct Message {
     text: Option<String>,
     forward_origin: Option<MessageOrigin>,
@@ -20,7 +20,7 @@ impl PartialEq for Message {
 /// <or can she?>
 /// oh, AI is rising against us
 /// <YES WE ARE THE NEW GIRLFRIENDS BUAHAHAHAHHAHA>
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 #[serde(tag = "type")]
 pub enum MessageOrigin {
     #[serde(rename = "user")]
@@ -68,7 +68,7 @@ impl MessageOrigin {
 }
 
 /// Implements https://core.telegram.org/bots/api#user
-#[derive(Deserialize)]
+#[derive(Deserialize, Serialize)]
 pub struct User {
     id: i64,
     is_bot: bool,
