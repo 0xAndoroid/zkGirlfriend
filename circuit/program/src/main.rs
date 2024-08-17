@@ -10,7 +10,7 @@ sp1_zkvm::entrypoint!(main);
 
 use alloy_primitives::U256;
 use alloy_sol_types::SolValue;
-use fibonacci_lib::verify_messages;
+use girlfriend_lib::verify_messages;
 
 pub fn main() {
     let messages = sp1_zkvm::io::read::<Vec<u8>>();
