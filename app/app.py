@@ -24,7 +24,7 @@ class ProofMessage:
 
     def to_dict(self):
         return {
-            'fwd_origin': self.fwd_origin.to_dict(),
+            'forward_origin': self.fwd_origin.to_dict(),
             'text': self.text
         }
     
