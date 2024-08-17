@@ -7,7 +7,7 @@ import {GirlfriendBank} from "../src/girlfriendBank.sol";
 contract DeployZK is Script {
     function run() public {
         vm.startBroadcast();
-        GirlfriendBank temp = new GirlfriendBank(1e18, 10, 0x3B6041173B80E77f038f3F2C0f9744f04837185e, 0x003a7efecb9f4315149db0e09447ad23adad64f6a5aa12731a814e40477cb012);
+        GirlfriendBank temp = new GirlfriendBank(1e18, 10, 0x3B6041173B80E77f038f3F2C0f9744f04837185e, 0x002e3cd0431437b0747be8442b444d9bad9303730a343819cd927d4613d3d213);
         vm.stopBroadcast();
     }
 }
