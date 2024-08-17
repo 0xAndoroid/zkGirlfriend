@@ -12,13 +12,14 @@ contract GirlfriendBank{
     uint256 immutable paymentAmount;
     address immutable SP1_VERIFIER;
     bytes32 immutable VERIFICATION_KEY;
+    address immutable OWNER;
 
     error notEnoughPayment();
 
     modifier checkPaymentAmount() {
-        if(msg.value < paymentAmount){
-            revert notEnoughPayment();
-        }
+        // if(msg.value < paymentAmount){
+        //     revert notEnoughPayment();
+        // }
         _;
     }
 
@@ -27,11 +28,12 @@ contract GirlfriendBank{
         s_subscriptionPeriod = _subscriptionPeriod;
         SP1_VERIFIER = _sp1verifier;
         VERIFICATION_KEY = _verificationKey;
+        OWNER = msg.sender;
     } 
 
-    function newGirlfriend(bytes calldata _publicValues, bytes calldata _proofBytes) external payable checkPaymentAmount {
+    function newGirlfriend(bytes calldata _publicValues, bytes calldata _proofBytes, address _owner) external payable checkPaymentAmount {
         _verifyProof(_publicValues, _proofBytes);
-        GirlfriendNFT temp = new GirlfriendNFT(s_subscriptionPeriod, msg.sender);
+        GirlfriendNFT temp = new GirlfriendNFT(s_subscriptionPeriod, _owner, abi.decode(_publicValues, (uint256)));
         s_addressToArrayIndex[msg.sender] = s_nfts.length;
         s_nfts.push(address(temp));
     }
@@ -43,4 +45,8 @@ contract GirlfriendBank{
     function _verifyProof(bytes calldata _publicValues, bytes calldata _proofBytes) internal view {
         ISP1Verifier(SP1_VERIFIER).verifyProof(VERIFICATION_KEY, _publicValues, _proofBytes);
     }
+
+    function withdraw() external {
+        (bool success, ) = payable(OWNER).call{value: address(this).balance}("");
+     }
 }

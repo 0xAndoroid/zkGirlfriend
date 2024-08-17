@@ -1,35 +1,38 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import {ERC721} from "lib/openzeppelin-contracts/contracts/token/ERC721/ERC721.sol";
 import {GirlfriendBank} from "./girlfriendBank.sol";
 
 contract GirlfriendNFT is ERC721 {
     uint256 s_paidUntil;
     uint256 s_subscriptionPeriod;
     address immutable s_bank;
+    uint256 immutable score;
 
     error OnlyBank();
 
-    constructor(uint256 _subscriptionPeriod, address _owner) ERC721("ZKGirlfriendNFT", "ZKGF") {
+    constructor(uint256 _subscriptionPeriod, address _owner, uint256 _score) ERC721("ZKGirlfriendNFT", "ZKGF") {
         s_paidUntil = block.number + _subscriptionPeriod;
         s_bank = msg.sender;
         _mint(_owner, 1);
+        score = _score;
     }
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
-        if(block.number > s_paidUntil){
-            return "testBad";
-        }else {
-            return "testGood";
+        if(score > 30){
+            return "https://imgur.com/RA4Ds0m";
+        }
+        else{
+            return "https://imgur.com/P9AbdFH";
         }
     }
 
-    function paySubscription() external{
-        if(msg.sender != s_bank){
-            revert OnlyBank();
-        }
-        s_paidUntil += s_subscriptionPeriod;
+    function paySubscription() external {
+        // if(msg.sender != s_bank){
+        //     revert OnlyBank();
+        // }
+        // s_paidUntil += s_subscriptionPeriod;
     }
 
     function approve(address to, uint256 tokenId) public override {}
