@@ -1,8 +1,9 @@
 use alloy::contract::{ContractInstance, Interface};
 use alloy::dyn_abi::DynSolValue;
-use alloy::network::Ethereum;
+use alloy::network::{Ethereum, EthereumWallet};
 use alloy::primitives::{address, Address};
 use alloy::providers::ProviderBuilder;
+use alloy::signers::local::PrivateKeySigner;
 use alloy::transports::http::{Client, Http};
 use axum::http::StatusCode;
 use axum::routing::post;
@@ -47,7 +48,12 @@ async fn prove(Json(payload): Json<ProveRequest>) -> (StatusCode, Json<ProveResp
         }
     };
 
-    let eth_client = ProviderBuilder::new().on_http(RPC_URL.parse().unwrap());
+
+    // let signer: PrivateKeySigner = "<PRIVATE_KEY>".parse().expect("should parse private key");
+    let signer: PrivateKeySigner =
+        std::env::var("PRIVATE_KEY").unwrap().parse().expect("should parse private key");
+    let wallet = EthereumWallet::from(signer);
+    let eth_client = ProviderBuilder::new().wallet(wallet).on_http(RPC_URL.parse().unwrap());
     let contract: ContractInstance<Http<Client>, _, Ethereum> = ContractInstance::new(
         CONTRACT_ADDRESS,
         eth_client,
