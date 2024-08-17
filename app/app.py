@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import requests
 from telegram import Message, Update
 from telegram.ext import ApplicationBuilder, ContextTypes, CommandHandler, MessageHandler, filters
 from dotenv import load_dotenv
@@ -72,7 +73,11 @@ async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
     
     jsonproofs = [proof.to_json() for proof in proofs]
-    print(jsonproofs)
+
+    # call the verifier endpoint localhost:3000
+    # POST /verify
+
+    r = requests.post('http://localhost:3000', json=jsonproofs)
     
     # generating proofs...
     await context.bot.send_message(chat_id=chat_id, text="Generating Zero-Knowledge Proofs...")

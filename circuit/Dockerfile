@@ -8,10 +8,10 @@ WORKDIR /app
 COPY Cargo.toml Cargo.lock ./
 
 # Copy the `lib` directory from the context into the container
-COPY ../lib /app/lib/
+COPY lib /app/lib/
 
 # Copy the rest of the application code
-COPY src /app/src
+COPY backend/src /app/src
 
 # Build the Rust application
 RUN cargo build --release
