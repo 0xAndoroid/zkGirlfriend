@@ -1631,12 +1631,16 @@ name = "fibonacci-lib"
 version = "0.1.0"
 dependencies = [
  "alloy-sol-types",
+ "httparse",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
 name = "fibonacci-program"
 version = "0.1.0"
 dependencies = [
+ "alloy-primitives",
  "alloy-sol-types",
  "fibonacci-lib",
  "sp1-zkvm",
