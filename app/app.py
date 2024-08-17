@@ -14,6 +14,9 @@ logging.basicConfig(
     level=logging.INFO
 )
 
+NO_REQUEST, ADDRESS_REQUEST, HAS_ADDRESS = range(3)
+has_address = {}
+chat_message_addresses = {}
 chat_message_proofs = {}
 chat_message_ids = {}
 chat_message_girlfriend = {}
@@ -57,17 +60,25 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     \n\t- "i love you"
     \n\t- "❤️"
     """
+    question = "Please submit your ethereum address to receive a NFT of your proof."
 
     chat_id = update.effective_chat.id
     chat_message_proofs[chat_id] = []
     chat_message_ids[chat_id] = []
+    has_address[chat_id] = ADDRESS_REQUEST
+
     await context.bot.send_message(chat_id=chat_id, text=prompt)
+    await context.bot.send_message(chat_id=chat_id, text=question)
 
 
 async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     chat_id = update.effective_chat.id
     proofs = chat_message_proofs.get(chat_id, [])
+
+    if has_address.get(chat_id, NO_REQUEST) != HAS_ADDRESS:
+        await context.bot.send_message(chat_id=chat_id, text="Please submit your ethereum address to continue.")
+        return 
     if len(proofs) < 3:
         await context.bot.send_message(chat_id=chat_id, text="Please forward at least 3 messages to verify.")
         return
@@ -80,20 +91,32 @@ async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     headers = {
         'Content-Type': 'application/json',
     }
-    print(jsonproofs)
-    r = requests.post('http://localhost:3000', headers=headers, data=json.dumps(jsonproofs))
+    body ={
+        'address': chat_message_addresses[chat_id],
+        'proofs': jsonproofs
+    }
+    print(body)
+    r = requests.post('http://localhost:3000', headers=headers, data=body)
     print(r.status_code)
     print(r)
-    
+
     # generating proofs...
     await context.bot.send_message(chat_id=chat_id, text="Generating Zero-Knowledge Proofs...")
 
+    if r.status_code == 200:
+        await context.bot.send_message(chat_id=chat_id, text="Verification Successful! You will receive your NFT shortly.")
+    else:
+        await context.bot.send_message(chat_id=chat_id, text="Verification Failed! Please try again.")
 
 async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     chat_id = update.effective_chat.id
     girlfriend = update.message.forward_origin.sender_user.username
     message_id = hash(str(update.message.forward_origin.date) + update.message.text)
+
+    if has_address.get(chat_id, NO_REQUEST) != HAS_ADDRESS:
+        await context.bot.send_message(chat_id=chat_id, text="Please submit your ethereum address to continue.")
+        return
 
     if chat_id in chat_message_proofs:
 
@@ -131,9 +154,29 @@ async def respond(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def regular(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
+
+    if has_address.get(chat_id, NO_REQUEST) == ADDRESS_REQUEST:
+
+        address = update.message.text
+
+        if not address.startswith('0x') or len(address) != 42:
+            await context.bot.send_message(
+                chat_id=chat_id, 
+                text="Please submit a valid ethereum address."
+            )
+            return
+
+        chat_message_addresses[chat_id] = address
+        has_address[chat_id] = HAS_ADDRESS
+        await context.bot.send_message(
+            chat_id=chat_id, 
+            text="Thank you for submitting your ethereum address. Please forward messages from your girlfriend."
+        )
+        return
+
     await context.bot.send_message(
         chat_id=chat_id, 
-        text="Please forward messages only, or use /start to (re)start the process. You are currently at {} forwarded messages.".format(chat_message_proofs.get(chat_id, 0)))
+        text="Please forward messages only, or use /start to (re)start the process. You are currently at {} forwarded messages.".format(len(chat_message_proofs.get(chat_id, []))))
 
 if __name__ == '__main__':
     application = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
