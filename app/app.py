@@ -77,7 +77,13 @@ async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # call the verifier endpoint localhost:3000
     # POST /verify
 
-    r = requests.post('http://localhost:3000', json=jsonproofs)
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    print(jsonproofs)
+    r = requests.post('http://localhost:3000', headers=headers, data=json.dumps(jsonproofs))
+    print(r.status_code)
+    print(r)
     
     # generating proofs...
     await context.bot.send_message(chat_id=chat_id, text="Generating Zero-Knowledge Proofs...")

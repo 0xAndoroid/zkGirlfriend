@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 /// Implements https://core.telegram.org/bots/api#message
 /// Removing unnecessary fields
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct Message {
     text: Option<String>,
     forward_origin: Option<MessageOrigin>,
@@ -20,7 +20,7 @@ impl PartialEq for Message {
 /// <or can she?>
 /// oh, AI is rising against us
 /// <YES WE ARE THE NEW GIRLFRIENDS BUAHAHAHAHHAHA>
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 #[serde(tag = "type")]
 pub enum MessageOrigin {
     #[serde(rename = "user")]
@@ -68,7 +68,7 @@ impl MessageOrigin {
 }
 
 /// Implements https://core.telegram.org/bots/api#user
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Debug)]
 pub struct User {
     id: i64,
     is_bot: bool,
@@ -78,15 +78,15 @@ pub struct User {
 /// Hist
 pub fn verify_messages(input: Vec<u8>) -> u64 {
     let msg = serde_json::from_slice::<Vec<Message>>(&input).unwrap();
-    
+
     msg.windows(2).for_each(|m| {
         if m[0].forward_origin != m[1].forward_origin {
             panic!("Two consecutive messages are not from the same person");
         }
     });
 
-    msg.iter().for_each(|m| {
-        if msg.iter().any(|m2| m == m2) {
+    msg.iter().enumerate().for_each(|(i, m)| {
+        if msg.iter().enumerate().any(|(j, m2)| m == m2 && i != j) {
             panic!("Messages are equal");
         }
     });
@@ -130,3 +130,16 @@ pub fn verify_messages(input: Vec<u8>) -> u64 {
     avg
 }
 
+#[cfg(test)]
+mod tests {
+    pub use super::*;
+
+    #[test]
+    fn test_verify_messages() {
+        let input = r#"
+        [{"text":"❤️❤️❤️❤️❤️😘😘😘😘😘😘","forward_origin":{"type":"user","date":1723833441,"sender_user":{"id":5936622848,"is_bot":false}}},{"text":"Miss you already. Can't wait to see you tonight 💕","forward_origin":{"type":"user","date":1723833503,"sender_user":{"id":5936622848,"is_bot":false}}},{"text":"You make my world brighter every day! ☀️❤️\n\nCan’t wait to see you later! 😘💖\nThinking of you always, my love! 💭💕\nYou’re my favorite part of every day! 😍🌸\nJust wanted to say I love you! 🥰❤️\nMissing you more than usual today 😢❤️\nYou make everything better 🥰🌟\nMy heart belongs to you, always ❤️🔒\nEvery moment with you is magic ✨💖\nYou’re my everything! 🌍💞","forward_origin":{"type":"user","date":1723846580,"sender_user":{"id":5936622848,"is_bot":false}}}]
+        "#;
+
+        assert_eq!(verify_messages(input.as_bytes().to_vec()), 1);
+    }
+}

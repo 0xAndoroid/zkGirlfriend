@@ -6,6 +6,7 @@ services:
       context: ./app
       dockerfile: Dockerfile
     container_name: teleserver
+    network_mode: "host"
     volumes:
       - ./app:/app
     ports:
