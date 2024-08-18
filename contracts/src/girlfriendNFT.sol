@@ -21,9 +21,9 @@ contract GirlfriendNFT is ERC721 {
 
     function tokenURI(uint256 tokenId) public view override returns (string memory) {
         if(score > 30){
-            return '{"image": "https://i.imgur.com/RA4Ds0m.png","name": "zkGirlfriend NFT"}';
+            return '{"image": "ipfs://QmagKRt1smLaZXAGYM9X8MkRegoxdWjucWKK4BbXXWEcio","name": "zkGirlfriend NFT"}';
         } else {
-            return '{"image": "https://i.imgur.com/P9AbdFH.png","name": "zkGirlfriend NFT"}';
+            return '{"image":"ipfs://QmfUEanc8tkfvg8vM3w3j4anhQtBtrV7LLB7LaeTYzPSFT","name": "zkGirlfriend NFT"}';
         }
     }
 

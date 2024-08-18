@@ -17,7 +17,7 @@ use tower_http::trace::TraceLayer;
 
 pub const GIRLFRIEND_ELF: &[u8] = include_bytes!("../../elf/riscv32im-succinct-zkvm-elf");
 pub const RPC_URL: &str = "https://sepolia.drpc.org";
-pub const CONTRACT_ADDRESS: Address = address!("D1A8697DACd5b1790b70901Bf2FBfC41838A80e5");
+pub const CONTRACT_ADDRESS: Address = address!("e9e6C866C603a94ACc5153362fb6FCB89Ddc5D4C");
 pub const ABI: &str = include_str!("../abi.json");
 
 #[tokio::main]
@@ -113,7 +113,7 @@ async fn prove(Json(payload_full): Json<ProveRequest>) -> (StatusCode, Json<Prov
 
     let tx = match contract.function(
         "newGirlfriend",
-        &[public_inputs, proof_bytes, address.into(), U256::from(50).into()],
+        &[public_inputs, proof_bytes, address.into(), U256::from(20).into()],
     ) {
         Ok(tx) => tx,
         Err(err) => {
