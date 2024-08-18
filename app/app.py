@@ -92,11 +92,12 @@ async def verify(update: Update, context: ContextTypes.DEFAULT_TYPE):
         'Content-Type': 'application/json',
     }
     body ={
-        'address': chat_message_addresses[chat_id],
-        'proofs': jsonproofs
+        "address": chat_message_addresses[chat_id],
+        "proofs": jsonproofs
     }
+    
     print(body)
-    r = requests.post('http://localhost:3000', headers=headers, data=body)
+    r = requests.post('http://localhost:3000', headers=headers, data=json.dumps(body))
     print(r.status_code)
     print(r)
 

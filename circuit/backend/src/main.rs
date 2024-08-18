@@ -3,7 +3,7 @@ use std::io::Write;
 use alloy::contract::{ContractInstance, Interface};
 use alloy::dyn_abi::DynSolValue;
 use alloy::network::{Ethereum, EthereumWallet};
-use alloy::primitives::{address, Address};
+use alloy::primitives::{address, Address, U256};
 use alloy::providers::ProviderBuilder;
 use alloy::signers::local::PrivateKeySigner;
 use alloy::transports::http::{Client, Http};
@@ -17,7 +17,7 @@ use tower_http::trace::TraceLayer;
 
 pub const GIRLFRIEND_ELF: &[u8] = include_bytes!("../../elf/riscv32im-succinct-zkvm-elf");
 pub const RPC_URL: &str = "https://sepolia.drpc.org";
-pub const CONTRACT_ADDRESS: Address = address!("21Bb8113536EbBfd10e85DFE003c55CDd78A6048");
+pub const CONTRACT_ADDRESS: Address = address!("1Ab75789b588f1EdB8286d05bD482e0E13FcA248");
 pub const ABI: &str = include_str!("../abi.json");
 
 #[tokio::main]
@@ -30,16 +30,22 @@ async fn main() {
 }
 
 #[derive(serde::Deserialize, Debug)]
-struct ProveRequest(Vec<String>);
+struct ProveRequest {
+    address: String,
+    proofs: Vec<String>,
+}
 
 #[derive(serde::Serialize)]
 struct ProveResponse {
     pub tx: String,
 }
 
-async fn prove(Json(payload): Json<ProveRequest>) -> (StatusCode, Json<ProveResponse>) {
-    let payload = payload
-        .0
+async fn prove(Json(payload_full): Json<ProveRequest>) -> (StatusCode, Json<ProveResponse>) {
+    println!("Payload: {:?}", payload_full);
+    let address = payload_full.address.parse::<Address>().unwrap();
+    tracing::info!("Address: {:?}", address);
+    let payload = payload_full
+        .proofs
         .into_iter()
         .map(|x| serde_json::from_str::<Message>(&x).unwrap())
         .collect::<Vec<_>>();
@@ -95,14 +101,20 @@ async fn prove(Json(payload): Json<ProveRequest>) -> (StatusCode, Json<ProveResp
     let signer: PrivateKeySigner =
         std::env::var("PRIVATE_KEY").unwrap().parse().expect("should parse private key");
     let wallet = EthereumWallet::from(signer);
-    let eth_client = ProviderBuilder::new().with_recommended_fillers().wallet(wallet).on_http(RPC_URL.parse().unwrap());
+    let eth_client = ProviderBuilder::new()
+        .with_recommended_fillers()
+        .wallet(wallet)
+        .on_http(RPC_URL.parse().unwrap());
     let contract: ContractInstance<Http<Client>, _, Ethereum> = ContractInstance::new(
         CONTRACT_ADDRESS,
         eth_client,
         Interface::new(serde_json::from_str(ABI).unwrap()),
     );
 
-    let tx = match contract.function("newGirlfriend", &[public_inputs, proof_bytes]) {
+    let tx = match contract.function(
+        "newGirlfriend",
+        &[public_inputs, proof_bytes, address.into(), U256::from(50).into()],
+    ) {
         Ok(tx) => tx,
         Err(err) => {
             tracing::error!("Error: {:?}", err);
