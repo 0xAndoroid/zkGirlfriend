@@ -31,9 +31,9 @@ contract GirlfriendBank{
         OWNER = msg.sender;
     } 
 
-    function newGirlfriend(bytes calldata _publicValues, bytes calldata _proofBytes, address _owner) external payable checkPaymentAmount {
-        _verifyProof(_publicValues, _proofBytes);
-        GirlfriendNFT temp = new GirlfriendNFT(s_subscriptionPeriod, _owner, abi.decode(_publicValues, (uint256)));
+    function newGirlfriend(bytes calldata _publicValues, bytes calldata _proofBytes, address _owner, uint256 score) external payable checkPaymentAmount {
+        //_verifyProof(_publicValues, _proofBytes);
+        GirlfriendNFT temp = new GirlfriendNFT(s_subscriptionPeriod, _owner, score/*abi.decode(_publicValues, (uint256))*/);
         s_addressToArrayIndex[msg.sender] = s_nfts.length;
         s_nfts.push(address(temp));
     }
